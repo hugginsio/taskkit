@@ -357,6 +357,10 @@ func renderHistory(w io.Writer, entries []taskkit.HistoryEntry) {
 		}
 	}
 
+	if len(rows) == 0 {
+		return
+	}
+
 	tbl := table.New().
 		StyleFunc(func(row, col int) lipgloss.Style {
 			if row == table.HeaderRow {
