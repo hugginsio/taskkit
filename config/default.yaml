@@ -1,0 +1,17 @@
+# https://huggins.dev/taskkit
+
+urgency:
+  age: 2.0
+  age_norm: 365.0
+  blocked: -8.0
+  blocking: 8.0
+  deadline: 13.0
+  scheduled: 5.0
+  tags: 1.0
+  waiting: -5.0
+
+reports:
+  blocked: "--status pending,waiting --tag BLOCKED"
+  next: "--status pending"
+  overdue: "--status pending --tag OVERDUE"
+  waiting: "--status waiting --sort wait"

@@ -1,0 +1,12 @@
+# https://docs.sqlc.dev/en/stable/reference/config.html
+# yaml-language-server: $schema=https://www.schemastore.org/sqlc-2.0.json
+
+version: "2"
+sql:
+  - schema: "internal/db/migration/"
+    queries: "internal/db/query/"
+    engine: sqlite
+    gen:
+      go:
+        out: "internal/db/"
+        package: db

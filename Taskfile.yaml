@@ -1,0 +1,23 @@
+# https://taskfile.dev
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+
+version: 3
+
+tasks:
+  bench:
+    desc: run all benchmarks
+    cmd: "go test -bench . ./..."
+  cli:
+    desc: run the CLI
+    dir: "./cmd/taskkit/"
+    cmd: "go run . {{.CLI_ARGS}}"
+    env:
+      DEVEL: true
+      TASKKIT_CONFIG: ./testdata/config.yaml
+  codegen:
+    desc: run codegen
+    cmds:
+      - "sqlc generate"
+  test:
+    desc: run all tests
+    cmd: "go test ./..."
