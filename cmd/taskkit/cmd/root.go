@@ -5,6 +5,7 @@ package cmd
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 
@@ -49,7 +50,14 @@ var rootCmd = &cobra.Command{
 func Execute() {
 	// Load config before cobra parses so we can register report shortcuts based
 	// on the resolved config (including any user overrides or removals).
-	if loaded, err := config.Load(); err == nil {
+	loaded, err := config.Load()
+	if errors.Is(err, config.ErrNotFound) {
+		if created := promptCreateConfig(os.Stdin, os.Stderr, config.DefaultPath()); created {
+			loaded, _ = config.Load()
+		}
+	}
+
+	if loaded != nil {
 		cfg = loaded
 		registerReportShortcuts(cfg)
 	}

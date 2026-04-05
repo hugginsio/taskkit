@@ -14,6 +14,10 @@ tasks:
     env:
       DEVEL: true
       TASKKIT_CONFIG: ./testdata/config.yaml
+  cli-install:
+    desc: install the CLI
+    dir: "./cmd/taskkit/"
+    cmd: "go install ."
   codegen:
     desc: run codegen
     cmds:

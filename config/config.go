@@ -34,16 +34,44 @@ type Config struct {
 	Reports  map[string]string `yaml:"reports"`
 }
 
+// DefaultPath returns the path where Load will look for a config file:
+// $TASKKIT_CONFIG if set, otherwise $XDG_CONFIG_HOME/taskkit/config.yaml.
+func DefaultPath() string {
+	if path := os.Getenv("TASKKIT_CONFIG"); path != "" {
+		return path
+	}
+
+	return filepath.Join(xdg.ConfigHome, "taskkit", "config.yaml")
+}
+
+// CreateDefault writes the embedded default configuration to DefaultPath,
+// creating parent directories as needed. Returns the path written.
+// Returns an error if the file already exists.
+func CreateDefault() (string, error) {
+	path := DefaultPath()
+	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
+		return "", fmt.Errorf("config: mkdir: %w", err)
+	}
+
+	f, err := os.OpenFile(path, os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0o600)
+	if err != nil {
+		return "", fmt.Errorf("config: create %s: %w", path, err)
+	}
+
+	defer f.Close()
+
+	if _, err := f.Write(defaultConfigYAML); err != nil {
+		return "", fmt.Errorf("config: write %s: %w", path, err)
+	}
+
+	return path, nil
+}
+
 // Load resolves the configuration file path and loads it.
 // It checks $TASKKIT_CONFIG first, then $XDG_CONFIG_HOME/taskkit/config.yaml.
 // Returns ErrNotFound if neither path exists.
 func Load() (*Config, error) {
-	if path := os.Getenv("TASKKIT_CONFIG"); path != "" {
-		return LoadFrom(path)
-	}
-
-	path := filepath.Join(xdg.ConfigHome, "taskkit", "config.yaml")
-	return LoadFrom(path)
+	return LoadFrom(DefaultPath())
 }
 
 // LoadFrom loads a Config from the given file path.
