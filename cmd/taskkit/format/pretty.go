@@ -46,6 +46,11 @@ func taskColumns() []taskColumn {
 			value: func(t *taskkit.Task) string { return taskIDList(t.BlockedBy) },
 		},
 		{
+			name: "blocking", header: "Blocking",
+			check: func(t *taskkit.Task) bool { return len(t.Blocking) > 0 },
+			value: func(t *taskkit.Task) string { return taskIDList(t.Blocking) },
+		},
+		{
 			name: "project", header: "Project",
 			check: func(t *taskkit.Task) bool { return t.Project != "" },
 			value: func(t *taskkit.Task) string { return t.Project },
@@ -53,16 +58,21 @@ func taskColumns() []taskColumn {
 		{
 			name: "tags", header: "Tags",
 			check: func(t *taskkit.Task) bool {
-				return len(t.Tags) > 0 || len(t.VirtualTags) > 0
+				return len(t.Tags) > 0
 			},
 			value: func(t *taskkit.Task) string {
-				return strings.Join(append(t.Tags, t.VirtualTags...), ", ")
+				return strings.Join(t.Tags, ", ")
 			},
 		},
 		{
 			name: "status", header: "Status",
 			check: func(t *taskkit.Task) bool { return t.Status != taskkit.StatusPending },
 			value: func(t *taskkit.Task) string { return string(t.Status) },
+		},
+		{
+			name: "wait", header: "Wait",
+			check: func(t *taskkit.Task) bool { return t.Wait != nil },
+			value: func(t *taskkit.Task) string { return prettyDate(t.Wait) },
 		},
 		{
 			name: "scheduled", header: "Scheduled",
@@ -75,34 +85,12 @@ func taskColumns() []taskColumn {
 			value: func(t *taskkit.Task) string { return prettyDate(t.Deadline) },
 		},
 		{
-			name: "wait", header: "Wait",
-			check: func(t *taskkit.Task) bool { return t.Wait != nil },
-			value: func(t *taskkit.Task) string { return prettyDate(t.Wait) },
-		},
-		{
-			name: "blocking", header: "Blocking",
-			check: func(t *taskkit.Task) bool { return len(t.Blocking) > 0 },
-			value: func(t *taskkit.Task) string { return taskIDList(t.Blocking) },
-		},
-		{
 			name: "description", header: "Description", show: true,
 			value: func(t *taskkit.Task) string { return t.Description },
 		},
 		{
 			name: "urgency", header: "Urgency", show: true,
 			value: func(t *taskkit.Task) string { return fmt.Sprintf("%.2f", t.Urgency) },
-		},
-		{
-			name: "modified", header: "Modified",
-			value: func(t *taskkit.Task) string {
-				return t.Modified.Local().Format(prettyDateLayout)
-			},
-		},
-		{
-			name: "created", header: "Created",
-			value: func(t *taskkit.Task) string {
-				return t.Created.Local().Format(prettyDateLayout)
-			},
 		},
 	}
 }
