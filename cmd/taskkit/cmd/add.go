@@ -18,6 +18,7 @@ var addCmd = &cobra.Command{
 	Aliases: []string{"a"},
 	Short:   "Add a new task",
 	Args:    cobra.MinimumNArgs(1),
+	GroupID: CommandGroupTask,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		task := &taskkit.Task{
 			Description: strings.Join(args, " "),

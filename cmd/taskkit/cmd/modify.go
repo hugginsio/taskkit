@@ -18,6 +18,7 @@ var modifyCmd = &cobra.Command{
 	Aliases: []string{"mod", "m"},
 	Short:   "Modify a task",
 	Args:    cobra.MinimumNArgs(1),
+	GroupID: CommandGroupTask,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		task, err := resolveTask(cmd.Context(), args[0])
 		if err != nil {

@@ -16,6 +16,7 @@ var doneCmd = &cobra.Command{
 	Aliases: []string{"c", "done", "d"},
 	Short:   "Mark a task as completed",
 	Args:    cobra.ExactArgs(1),
+	GroupID: CommandGroupTask,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		task, err := resolveTask(cmd.Context(), args[0])
 		if err != nil {

@@ -13,6 +13,7 @@ var infoCmd = &cobra.Command{
 	Aliases: []string{"i"},
 	Short:   "Show details for a task",
 	Args:    cobra.ExactArgs(1),
+	GroupID: CommandGroupTask,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		task, err := resolveTask(cmd.Context(), args[0])
 		if err != nil {

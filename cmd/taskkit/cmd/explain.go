@@ -12,6 +12,7 @@ var explainCmd = &cobra.Command{
 	Use:     "explain <id>",
 	Aliases: []string{"ex"},
 	Short:   "Show urgency calculation for a task",
+	GroupID: CommandGroupUtility,
 	Args:    cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		task, err := resolveTask(cmd.Context(), args[0])

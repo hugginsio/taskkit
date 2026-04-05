@@ -16,7 +16,7 @@ var ulidToDateCmd = &cobra.Command{
 	Use:     "date-from-ulid <ulid>",
 	Short:   "Extract a date from a ULID",
 	Args:    cobra.ExactArgs(1),
-	GroupID: "utility",
+	GroupID: CommandGroupUtility,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		id, err := ulid.ParseStrict(strings.TrimSpace(args[0]))
 		if err != nil {

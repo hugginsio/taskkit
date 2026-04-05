@@ -19,6 +19,10 @@ import (
 var c *client.Client   // The TaskKit Client, instantiated at runtime.
 var cfg *config.Config // The resolved configuration, set alongside c.
 
+var CommandGroupTask = "task"
+var CommandGroupUtility = "utility"
+var CommandGroupReport = "report"
+
 var rootCmd = &cobra.Command{
 	Use:   "taskkit",
 	Short: "A toolkit for task and project management",
@@ -74,5 +78,10 @@ func Execute() {
 
 func init() {
 	// TODO: more groups
-	rootCmd.AddGroup(&cobra.Group{ID: "utility", Title: "Utilities"})
+	rootCmd.AddGroup(&cobra.Group{ID: CommandGroupTask, Title: "Tasks"})
+	rootCmd.AddGroup(&cobra.Group{ID: CommandGroupReport, Title: "Reports"})
+	rootCmd.AddGroup(&cobra.Group{ID: CommandGroupUtility, Title: "Utilities"})
+
+	rootCmd.SetCompletionCommandGroupID(CommandGroupUtility)
+	rootCmd.SetHelpCommandGroupID(CommandGroupUtility)
 }

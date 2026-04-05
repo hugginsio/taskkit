@@ -12,6 +12,7 @@ var listCmd = &cobra.Command{
 	Use:     "list",
 	Aliases: []string{"ls"},
 	Short:   "List tasks",
+	GroupID: CommandGroupTask,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		filters, err := filtersFromFlags(cmd.Context(), cmd)
 		if err != nil {

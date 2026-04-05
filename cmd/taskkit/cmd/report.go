@@ -17,6 +17,7 @@ var reportCmd = &cobra.Command{
 	Aliases: []string{"r"},
 	Short:   "List or run reports",
 	Args:    cobra.MaximumNArgs(1),
+	GroupID: CommandGroupReport,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) == 0 {
 			return cmd.Help()
@@ -91,8 +92,9 @@ func registerReportShortcuts(cfg *config.Config) {
 	for name, flags := range cfg.Reports {
 		name, flags := name, flags
 		shortcut := &cobra.Command{
-			Use:   name,
-			Short: fmt.Sprintf("Alias for 'taskkit report %s'", name),
+			Use:     name,
+			Short:   fmt.Sprintf("Alias for 'taskkit report %s'", name),
+			GroupID: CommandGroupReport,
 			RunE: func(cmd *cobra.Command, _ []string) error {
 				return runReportFlags(cmd, flags)
 			},

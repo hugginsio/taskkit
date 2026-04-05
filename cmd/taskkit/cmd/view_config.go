@@ -13,7 +13,7 @@ import (
 var viewConfigCmd = &cobra.Command{
 	Use:     "view-config",
 	Short:   "Print the resolved configuration",
-	GroupID: "utility",
+	GroupID: CommandGroupUtility,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		out, err := json.MarshalIndent(cfg, "", "  ")
 		if err != nil {
