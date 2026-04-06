@@ -16,20 +16,33 @@ import (
 // Weights holds the urgency scoring coefficients.
 // Defaults for all fields are defined in config/default.yaml.
 type Weights struct {
-	Deadline  float64 `yaml:"deadline"`
-	Scheduled float64 `yaml:"scheduled"`
 	Age       float64 `yaml:"age"`
 	AgeNorm   float64 `yaml:"age_norm"`
-	Tags      float64 `yaml:"tags"`
-	Waiting   float64 `yaml:"waiting"`
 	Blocked   float64 `yaml:"blocked"`
 	Blocking  float64 `yaml:"blocking"`
+	Deadline  float64 `yaml:"deadline"`
+	Scheduled float64 `yaml:"scheduled"`
+	Tags      float64 `yaml:"tags"`
+	Waiting   float64 `yaml:"waiting"`
 }
 
 // Score computes the urgency score for task at the given reference time using w.
 // now is injected so callers and tests can use a fixed clock.
 func Score(task *taskkit.Task, w Weights, now time.Time) float64 {
 	var score float64
+
+	// Age — derived from the creation timestamp already on the domain type.
+	score += w.Age * ageFactor(now, task.Created, w.AgeNorm)
+
+	// Blocked — has active blocked-by dependencies.
+	if len(task.BlockedBy) > 0 {
+		score += w.Blocked
+	}
+
+	// Blocking — this task is blocking other tasks.
+	if len(task.Blocking) > 0 {
+		score += w.Blocking
+	}
 
 	// Deadline.
 	if task.Deadline != nil {
@@ -41,9 +54,6 @@ func Score(task *taskkit.Task, w Weights, now time.Time) float64 {
 		score += w.Scheduled
 	}
 
-	// Age — derived from the creation timestamp already on the domain type.
-	score += w.Age * ageFactor(now, task.Created, w.AgeNorm)
-
 	// Tags.
 	if n := len(task.Tags); n > 0 {
 		score += w.Tags * tagModifier(n)
@@ -52,16 +62,6 @@ func Score(task *taskkit.Task, w Weights, now time.Time) float64 {
 	// Waiting penalty.
 	if task.Status == taskkit.StatusWaiting {
 		score += w.Waiting
-	}
-
-	// Blocked — has active blocked-by dependencies.
-	if len(task.BlockedBy) > 0 {
-		score += w.Blocked
-	}
-
-	// Blocking — this task is blocking other tasks.
-	if len(task.Blocking) > 0 {
-		score += w.Blocking
 	}
 
 	return math.Round(score*100) / 100
@@ -79,6 +79,16 @@ func Components(task *taskkit.Task, w Weights, now time.Time) []taskkit.UrgencyC
 
 	var terms []term
 
+	terms = append(terms, term{"age", ageFactor(now, task.Created, w.AgeNorm), w.Age})
+
+	if len(task.BlockedBy) > 0 {
+		terms = append(terms, term{"blocked", 1, w.Blocked})
+	}
+
+	if len(task.Blocking) > 0 {
+		terms = append(terms, term{"blocking", 1, w.Blocking})
+	}
+
 	if task.Deadline != nil {
 		terms = append(terms, term{"due", dueFactor(now, *task.Deadline), w.Deadline})
 	}
@@ -87,22 +97,12 @@ func Components(task *taskkit.Task, w Weights, now time.Time) []taskkit.UrgencyC
 		terms = append(terms, term{"scheduled", 1, w.Scheduled})
 	}
 
-	terms = append(terms, term{"age", ageFactor(now, task.Created, w.AgeNorm), w.Age})
-
 	if n := len(task.Tags); n > 0 {
 		terms = append(terms, term{"tags", tagModifier(n), w.Tags})
 	}
 
 	if task.Status == taskkit.StatusWaiting {
 		terms = append(terms, term{"waiting", 1, w.Waiting})
-	}
-
-	if len(task.BlockedBy) > 0 {
-		terms = append(terms, term{"blocked", 1, w.Blocked})
-	}
-
-	if len(task.Blocking) > 0 {
-		terms = append(terms, term{"blocking", 1, w.Blocking})
 	}
 
 	var out []taskkit.UrgencyComponent
