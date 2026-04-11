@@ -11,11 +11,37 @@ import (
 
 	"github.com/hugginsio/taskkit"
 	"github.com/hugginsio/taskkit/client"
+	"github.com/hugginsio/taskkit/config"
 	"github.com/hugginsio/taskkit/filter"
 	"github.com/spf13/cobra"
 )
 
 const dateLayout = "2006-01-02"
+
+// ensureClient initializes the global client if it is not already open.
+// Completion funcs that need database access call this instead of relying on
+// PersistentPreRunE, which is skipped for __complete commands.
+func ensureClient(ctx context.Context) error {
+	if c != nil {
+		return nil
+	}
+
+	if cfg == nil {
+		loaded, err := config.Load()
+		if err != nil {
+			return err
+		}
+		cfg = loaded
+	}
+
+	cl, err := client.NewClient(ctx, cfg)
+	if err != nil {
+		return err
+	}
+
+	c = cl
+	return nil
+}
 
 // registerOutputFlag attaches the --output and --columns flags to cmd.
 func registerOutputFlag(cmd *cobra.Command) {
