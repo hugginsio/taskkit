@@ -45,13 +45,28 @@ func ensureClient(ctx context.Context) error {
 
 // registerOutputFlag attaches the --output and --columns flags to cmd.
 func registerOutputFlag(cmd *cobra.Command) {
-	cmd.Flags().String("output", "pretty", "output format (pretty, json)")
-	cmd.Flags().StringSlice("columns", nil, "e.g. description, deadline (pretty only)")
+	cmd.Flags().StringP("output", "o", "pretty", "output format (pretty, json)")
+	cmd.RegisterFlagCompletionFunc("output", func(cmd *cobra.Command, args []string, toComplete string) ([]cobra.Completion, cobra.ShellCompDirective) {
+		return []cobra.Completion{
+			"pretty",
+			"json",
+		}, cobra.ShellCompDirectiveNoFileComp
+	})
+
+	cmd.Flags().StringSliceP("columns", "c", nil, "e.g. description, deadline (pretty only)")
 }
 
 // registerSortFlag attaches the --sort flag to cmd.
 func registerSortFlag(cmd *cobra.Command) {
-	cmd.Flags().String("sort", "urgency", "sort order: urgency, id, modified, wait")
+	cmd.Flags().StringP("sort", "z", "urgency", "sort order: urgency, id, modified, wait")
+	cmd.RegisterFlagCompletionFunc("output", func(cmd *cobra.Command, args []string, toComplete string) ([]cobra.Completion, cobra.ShellCompDirective) {
+		return []cobra.Completion{
+			"urgency",
+			"id",
+			"modified",
+			"wait",
+		}, cobra.ShellCompDirectiveNoFileComp
+	})
 }
 
 // sortTasks sorts tasks in-place according to sortBy.
@@ -88,52 +103,56 @@ func sortTasks(tasks []*taskkit.Task, sortBy string) {
 
 // registerTaskFlags attaches the shared task modifier flags to cmd.
 func registerTaskFlags(cmd *cobra.Command) {
-	cmd.Flags().String("project", "", "project name")
+	cmd.Flags().StringP("project", "p", "", "project name")
 
-	cmd.Flags().String("status", "", "pending, completed, or removed")
+	cmd.Flags().StringP("status", "T", "", "pending, completed, or removed")
 	cmd.RegisterFlagCompletionFunc("status", func(cmd *cobra.Command, args []string, toComplete string) ([]cobra.Completion, cobra.ShellCompDirective) {
-		return []cobra.Completion{""}, cobra.ShellCompDirectiveNoFileComp
+		return []cobra.Completion{
+			cobra.Completion(taskkit.StatusPending),
+			cobra.Completion(taskkit.StatusCompleted),
+			cobra.Completion(taskkit.StatusRemoved),
+		}, cobra.ShellCompDirectiveNoFileComp
 	})
 
-	cmd.Flags().StringSlice("tags", nil, "comma-separated list of tags")
+	cmd.Flags().StringSliceP("tags", "t", nil, "comma separated list of tags")
 }
 
 // registerDateFlags attaches date mutation flags to cmd.
 func registerDateFlags(cmd *cobra.Command) {
-	cmd.Flags().String("deadline", "", "date the task should be completed")
-	cmd.Flags().String("scheduled", "", "date that work should begin")
-	cmd.Flags().String("wait", "", "date the task becomes visible in reports")
+	cmd.Flags().StringP("deadline", "d", "", "date the task should be completed")
+	cmd.Flags().StringP("scheduled", "s", "", "date that work should begin")
+	cmd.Flags().StringP("wait", "w", "", "date the task becomes visible in reports")
 }
 
 // registerDependencyFlags attaches dependency mutation flags to cmd.
 func registerDependencyFlags(cmd *cobra.Command) {
-	cmd.Flags().StringSlice("blocked", nil, "tasks that this task blocks")
-	cmd.Flags().StringSlice("blocking", nil, "tasks that block this task")
-	cmd.Flags().StringSlice("unblocked", nil, "remove blocked-by dependencies")
+	cmd.Flags().StringSliceP("blocked", "B", nil, "tasks blocked by the given task")
+	cmd.Flags().StringSliceP("blocking", "b", nil, "tasks blocking the given task")
+	cmd.Flags().StringSliceP("unblocked", "u", nil, "remove blocked-by dependencies")
 }
 
 // registerRemoveFlags attaches removal flags to cmd (for modify only).
 func registerRemoveFlags(cmd *cobra.Command) {
-	cmd.Flags().StringSlice("untag", nil, "tags to remove")
+	cmd.Flags().StringSliceP("untag", "U", nil, "tags to remove")
 }
 
 // registerFilterFlags attaches query filter flags to cmd.
 func registerFilterFlags(cmd *cobra.Command) {
-	cmd.Flags().Bool("status-all", false, "include tasks of any status")
-	cmd.Flags().String("blocked-by", "", "tasks blocked by the given task")
-	cmd.Flags().String("blocking", "", "tasks that are blocking the given task")
-	cmd.Flags().String("deadline-after", "", "tasks with a deadline after date")
-	cmd.Flags().String("deadline-before", "", "tasks with a deadline before date")
-	cmd.Flags().String("modified-after", "", "tasks last modified after date")
-	cmd.Flags().String("modified-before", "", "tasks last modified before date")
-	cmd.Flags().String("project", "", "filter by project name")
-	cmd.Flags().String("scheduled-after", "", "tasks scheduled to start after date")
-	cmd.Flags().String("scheduled-before", "", "tasks scheduled to start before date")
-	cmd.Flags().String("wait-after", "", "tasks with a wait date after date")
-	cmd.Flags().String("wait-before", "", "tasks with a wait date before date")
-	cmd.Flags().StringSlice("status", nil, "filter by statuses (pending, waiting, completed, removed)")
-	cmd.Flags().StringSlice("tag", nil, "filter by tags (all must match)")
-	cmd.Flags().StringSlice("tags-any", nil, "filter by tags (any may match)")
+	cmd.Flags().BoolP("status-all", "A", false, "include tasks of any status")
+	cmd.Flags().StringP("blocked", "B", "", "tasks blocked by the given task")
+	cmd.Flags().StringP("blocking", "b", "", "tasks that are blocking the given task")
+	cmd.Flags().StringP("deadline-after", "d", "", "tasks with a deadline after date")
+	cmd.Flags().StringP("deadline-before", "D", "", "tasks with a deadline before date")
+	cmd.Flags().StringP("modified-after", "m", "", "tasks last modified after date")
+	cmd.Flags().StringP("modified-before", "M", "", "tasks last modified before date")
+	cmd.Flags().StringP("project", "p", "", "filter by project name")
+	cmd.Flags().StringP("scheduled-after", "s", "", "tasks scheduled to start after date")
+	cmd.Flags().StringP("scheduled-before", "S", "", "tasks scheduled to start before date")
+	cmd.Flags().StringP("wait-after", "w", "", "tasks with a wait date after date")
+	cmd.Flags().StringP("wait-before", "W", "", "tasks with a wait date before date")
+	cmd.Flags().StringSliceP("status", "T", nil, "filter by statuses (pending, waiting, completed, removed)")
+	cmd.Flags().StringSliceP("tag", "t", nil, "filter by tags (all must match)")
+	cmd.Flags().StringSliceP("tags-any", "a", nil, "filter by tags (any may match)")
 }
 
 // filtersFromFlags returns a Filter for each filter flag that was explicitly set.
