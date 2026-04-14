@@ -9,14 +9,13 @@ import (
 	"sort"
 	"time"
 
+	"github.com/hugginsio/dateparse"
 	"github.com/hugginsio/taskkit"
 	"github.com/hugginsio/taskkit/client"
 	"github.com/hugginsio/taskkit/config"
 	"github.com/hugginsio/taskkit/filter"
 	"github.com/spf13/cobra"
 )
-
-const dateLayout = "2006-01-02"
 
 // ensureClient initializes the global client if it is not already open.
 // Completion funcs that need database access call this instead of relying on
@@ -362,28 +361,10 @@ func modificationsFromFlags(cmd *cobra.Command) ([]client.Modification, error) {
 
 func parseDate(cmd *cobra.Command, flag string) (*time.Time, error) {
 	raw, _ := cmd.Flags().GetString(flag)
-	return parseDateString(flag, raw)
-}
-
-// parseDateString parses a date string for a named flag.
-// Accepts "today", "tomorrow", or "YYYY-MM-DD".
-func parseDateString(flag, raw string) (*time.Time, error) {
-	now := time.Now()
-	today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.Local)
-
-	switch raw {
-	case "now":
-		return &now, nil
-	case "today":
-		return &today, nil
-	case "tomorrow":
-		t := today.AddDate(0, 0, 1)
-		return &t, nil
-	}
-
-	t, err := time.ParseInLocation(dateLayout, raw, time.Local)
+	dp := dateparse.New()
+	t, err := dp.Parse(raw)
 	if err != nil {
-		return nil, fmt.Errorf("--%s: expected YYYY-MM-DD, now, today, or tomorrow; got %q", flag, raw)
+		return nil, fmt.Errorf("--%s: %w", flag, err)
 	}
 
 	return &t, nil
