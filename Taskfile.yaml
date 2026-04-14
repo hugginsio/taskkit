@@ -25,3 +25,20 @@ tasks:
   test:
     desc: run all tests
     cmd: "go test ./..."
+  release-snapshot:
+    desc: release (no push)
+    cmd: "goreleaser --snapshot --clean"
+  release:
+    prompt: "Confirm"
+    desc: release (no push)
+    env:
+      GITHUB_TOKEN: "$(gh auth token)"
+    preconditions:
+      - "which gh"
+      - "which git"
+      - "which goreleaser"
+      - "which svu"
+    cmds:
+      - "git tag $(svu next)"
+      - "git push origin $(svu current)"
+      - "goreleaser --clean"
