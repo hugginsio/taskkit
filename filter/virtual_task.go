@@ -21,15 +21,17 @@ func init() {
 		applies: func(t *taskkit.Task, _ time.Time) bool { return t.Scheduled != nil },
 	})
 
-	// Task has a wait date set.
+	// Task has a future wait date (not yet visible in reports).
 	register("WAITING", virtualTag{
-		positive: func(_ time.Time) Clause {
-			return Clause{SQL: "wait IS NOT NULL"}
+		positive: func(now time.Time) Clause {
+			return Clause{SQL: "wait IS NOT NULL AND wait > ?", Params: []any{now.Format(time.RFC3339)}}
 		},
-		negative: func(_ time.Time) Clause {
-			return Clause{SQL: "wait IS NULL"}
+		negative: func(now time.Time) Clause {
+			return Clause{SQL: "wait IS NULL OR wait <= ?", Params: []any{now.Format(time.RFC3339)}}
 		},
-		applies: func(t *taskkit.Task, _ time.Time) bool { return t.Wait != nil },
+		applies: func(t *taskkit.Task, now time.Time) bool {
+			return t.Wait != nil && t.Wait.After(now)
+		},
 	})
 
 	// Task has at least one user-defined tag.
