@@ -149,7 +149,7 @@ func registerFilterFlags(cmd *cobra.Command) {
 	cmd.Flags().StringP("scheduled-before", "S", "", "tasks scheduled to start before date")
 	cmd.Flags().StringP("wait-after", "w", "", "tasks with a wait date after date")
 	cmd.Flags().StringP("wait-before", "W", "", "tasks with a wait date before date")
-	cmd.Flags().StringSliceP("status", "T", nil, "filter by statuses (pending, waiting, completed, removed)")
+	cmd.Flags().StringSliceP("status", "T", nil, "filter by statuses (pending, completed, removed)")
 	cmd.Flags().StringSliceP("tag", "t", nil, "filter by tags (all must match)")
 	cmd.Flags().StringSliceP("tags-any", "a", nil, "filter by tags (any may match)")
 }
@@ -169,9 +169,9 @@ func filtersFromFlags(ctx context.Context, cmd *cobra.Command) ([]filter.Filter,
 		for _, raw := range statuses {
 			s := taskkit.Status(raw)
 			switch s {
-			case taskkit.StatusPending, taskkit.StatusWaiting, taskkit.StatusCompleted, taskkit.StatusRemoved:
+			case taskkit.StatusPending, taskkit.StatusCompleted, taskkit.StatusRemoved:
 			default:
-				return nil, fmt.Errorf("unknown status %q: must be pending, waiting, completed, or removed", raw)
+				return nil, fmt.Errorf("unknown status %q: must be pending, completed, or removed", raw)
 			}
 
 			ss = append(ss, s)
@@ -179,7 +179,7 @@ func filtersFromFlags(ctx context.Context, cmd *cobra.Command) ([]filter.Filter,
 
 		filters = append(filters, filter.StatusAny(ss...))
 	default:
-		filters = append(filters, filter.StatusAny(taskkit.StatusPending, taskkit.StatusWaiting))
+		filters = append(filters, filter.StatusAny(taskkit.StatusPending))
 	}
 
 	if cmd.Flags().Changed("project") {
@@ -290,9 +290,9 @@ func modificationsFromFlags(cmd *cobra.Command) ([]client.Modification, error) {
 		raw, _ := cmd.Flags().GetString("status")
 		s := taskkit.Status(raw)
 		switch s {
-		case taskkit.StatusPending, taskkit.StatusWaiting, taskkit.StatusCompleted, taskkit.StatusRemoved:
+		case taskkit.StatusPending, taskkit.StatusCompleted, taskkit.StatusRemoved:
 		default:
-			return nil, fmt.Errorf("unknown status %q: must be pending, waiting, completed, or removed", raw)
+			return nil, fmt.Errorf("unknown status %q: must be pending, completed, or removed", raw)
 		}
 
 		mods = append(mods, client.SetStatus(s))

@@ -116,13 +116,13 @@ func TestGet_ByDisplayID(t *testing.T) {
 
 func TestGet_ByStatus(t *testing.T) {
 	c := newTestClient(t)
-	now := time.Now().Add(time.Hour)
+	waitDate := time.Now().Add(time.Hour)
 
 	samples := []taskkit.Task{
-		taskkit.Task{Description: "avacados", Status: taskkit.StatusPending},
-		taskkit.Task{Description: "bananas", Status: taskkit.StatusWaiting, Wait: &now},
-		taskkit.Task{Description: "chocolate", Status: taskkit.StatusCompleted},
-		taskkit.Task{Description: "donuts", Status: taskkit.StatusRemoved},
+		{Description: "avacados", Status: taskkit.StatusPending},
+		{Description: "bananas", Status: taskkit.StatusPending, Wait: &waitDate},
+		{Description: "chocolate", Status: taskkit.StatusCompleted},
+		{Description: "donuts", Status: taskkit.StatusRemoved},
 	}
 
 	for _, task := range samples {
@@ -130,13 +130,8 @@ func TestGet_ByStatus(t *testing.T) {
 	}
 
 	pending := mustGet(t, c, filter.Status(taskkit.StatusPending))
-	if len(pending) != 1 {
+	if len(pending) != 2 {
 		t.Fatalf("Get pending: got %v", len(pending))
-	}
-
-	waiting := mustGet(t, c, filter.Status(taskkit.StatusWaiting))
-	if len(waiting) != 1 {
-		t.Fatalf("Get waiting: got %v", len(waiting))
 	}
 
 	removed := mustGet(t, c, filter.Status(taskkit.StatusRemoved))
@@ -144,7 +139,7 @@ func TestGet_ByStatus(t *testing.T) {
 		t.Fatalf("Get removed: got %v", len(removed))
 	}
 
-	any := mustGet(t, c, filter.StatusAny(taskkit.StatusPending, taskkit.StatusWaiting, taskkit.StatusCompleted, taskkit.StatusRemoved))
+	any := mustGet(t, c, filter.StatusAny(taskkit.StatusPending, taskkit.StatusCompleted, taskkit.StatusRemoved))
 	if len(any) != len(samples) {
 		t.Fatalf("Get any: got %v", len(any))
 	}

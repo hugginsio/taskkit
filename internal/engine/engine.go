@@ -487,7 +487,7 @@ func (e *Engine) hydrateShallow(ctx context.Context, q *db.Queries, row db.Task)
 }
 
 func isActive(s taskkit.Status) bool {
-	return s == taskkit.StatusPending || s == taskkit.StatusWaiting
+	return s == taskkit.StatusPending
 }
 
 func toNullString(s string) sql.NullString {

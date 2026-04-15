@@ -59,8 +59,8 @@ func Score(task *taskkit.Task, w Weights, now time.Time) float64 {
 		score += w.Tags * tagModifier(n)
 	}
 
-	// Waiting penalty.
-	if task.Status == taskkit.StatusWaiting {
+	// Waiting penalty — task has a future wait date.
+	if task.Wait != nil && task.Wait.After(now) {
 		score += w.Waiting
 	}
 
@@ -101,7 +101,7 @@ func Components(task *taskkit.Task, w Weights, now time.Time) []taskkit.UrgencyC
 		terms = append(terms, term{"tags", tagModifier(n), w.Tags})
 	}
 
-	if task.Status == taskkit.StatusWaiting {
+	if task.Wait != nil && task.Wait.After(now) {
 		terms = append(terms, term{"waiting", 1, w.Waiting})
 	}
 

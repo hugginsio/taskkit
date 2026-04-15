@@ -221,7 +221,7 @@ func (c *Client) Projects(ctx context.Context) ([]*taskkit.ProjectSummary, error
 		}
 
 		switch t.Status {
-		case taskkit.StatusPending, taskkit.StatusWaiting:
+		case taskkit.StatusPending:
 			s.Remaining++
 		case taskkit.StatusCompleted:
 			s.Completed++

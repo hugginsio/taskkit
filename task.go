@@ -14,7 +14,6 @@ type Status string
 
 const (
 	StatusPending   Status = "pending"   // Task is active and visible.
-	StatusWaiting   Status = "waiting"   // Task is hidden until its Wait date passes.
 	StatusCompleted Status = "completed" // Task has been completed.
 	StatusRemoved   Status = "removed"   // Task has been soft-deleted.
 )
@@ -31,7 +30,7 @@ type Task struct {
 	Blocking         []*Task            `json:"blocking,omitempty"`          // Tasks that depend on this Task being completed.
 	Deadline         *time.Time         `json:"deadline,omitempty"`          // When the Task is supposed to be completed.
 	Scheduled        *time.Time         `json:"scheduled,omitempty"`         // When work on the Task is supposed to begin.
-	Wait             *time.Time         `json:"wait,omitempty"`              // When the Task becomes visible; the Task has StatusWaiting until this time passes.
+	Wait             *time.Time         `json:"wait,omitempty"`              // When the Task becomes visible in reports.
 	Urgency          float64            `json:"urgency"`                     // Computed urgency of a Task; higher values are more urgent.
 	UrgencyBreakdown []UrgencyComponent `json:"urgency_breakdown,omitempty"` // Per-component breakdown; populated only by info-style queries.
 	Created          time.Time          `json:"created"`                     // When the Task was created.
