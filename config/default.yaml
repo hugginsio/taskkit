@@ -11,7 +11,7 @@ urgency:
   waiting: -5.0
 
 reports:
-  blocked: "--status pending,waiting --tag BLOCKED"
+  blocked: "--tag BLOCKED"
   next: "--status pending"
   overdue: "--status pending --tag OVERDUE"
-  waiting: "--status waiting --sort wait"
+  waiting: "--tag WAITING --sort wait"

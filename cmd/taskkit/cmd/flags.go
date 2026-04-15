@@ -137,7 +137,8 @@ func registerRemoveFlags(cmd *cobra.Command) {
 
 // registerFilterFlags attaches query filter flags to cmd.
 func registerFilterFlags(cmd *cobra.Command) {
-	cmd.Flags().BoolP("status-all", "A", false, "include tasks of any status")
+	cmd.Flags().BoolP("status-all", "A", false, "include pending and waiting tasks")
+	cmd.Flags().Bool("status-literally-all", false, "include tasks of any status and state")
 	cmd.Flags().StringP("blocked", "B", "", "tasks blocked by the given task")
 	cmd.Flags().StringP("blocking", "b", "", "tasks that are blocking the given task")
 	cmd.Flags().StringP("deadline-after", "d", "", "tasks with a deadline after date")
@@ -155,14 +156,32 @@ func registerFilterFlags(cmd *cobra.Command) {
 }
 
 // filtersFromFlags returns a Filter for each filter flag that was explicitly set.
-// If neither --status-any nor --status-all is set, defaults to pending and waiting.
+// Default: pending tasks, waiting excluded. -A: pending including waiting.
+// --status-literally-all: no filters. --status: explicit statuses, waiting included.
 func filtersFromFlags(ctx context.Context, cmd *cobra.Command) ([]filter.Filter, error) {
 	var filters []filter.Filter
 
+	waitingRequested := false
+	for _, flag := range []string{"tag", "tags-any"} {
+		if cmd.Flags().Changed(flag) {
+			tags, _ := cmd.Flags().GetStringSlice(flag)
+			for _, t := range tags {
+				if t == "WAITING" {
+					waitingRequested = true
+				}
+			}
+		}
+	}
+
+	statusLiterallyAll, _ := cmd.Flags().GetBool("status-literally-all")
 	statusAll, _ := cmd.Flags().GetBool("status-all")
+
 	switch {
+	case statusLiterallyAll:
+		// No filters — include every task regardless of status or wait state.
 	case statusAll:
-		// No status filter — include everything.
+		// Pending tasks including those with a future wait date.
+		filters = append(filters, filter.Status(taskkit.StatusPending))
 	case cmd.Flags().Changed("status"):
 		statuses, _ := cmd.Flags().GetStringSlice("status")
 		var ss []taskkit.Status
@@ -180,6 +199,9 @@ func filtersFromFlags(ctx context.Context, cmd *cobra.Command) ([]filter.Filter,
 		filters = append(filters, filter.StatusAny(ss...))
 	default:
 		filters = append(filters, filter.Status(taskkit.StatusPending))
+		if !waitingRequested {
+			filters = append(filters, filter.LacksTag("WAITING"))
+		}
 	}
 
 	if cmd.Flags().Changed("project") {
