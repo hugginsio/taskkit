@@ -48,7 +48,7 @@ release:
     name: taskkit
   target_commitish: "{{ .Commit }}"
 homebrew_casks:
-  - description: "Task"
+  - description: "A toolkit for task and project management"
     repository:
       owner: hugginsio
       name: homebrew-tap
