@@ -29,6 +29,10 @@ type Weights struct {
 // Score computes the urgency score for task at the given reference time using w.
 // now is injected so callers and tests can use a fixed clock.
 func Score(task *taskkit.Task, w Weights, now time.Time) float64 {
+	if task.Status == taskkit.StatusCompleted || task.Status == taskkit.StatusRemoved {
+		return 0
+	}
+
 	var score float64
 
 	// Age — derived from the creation timestamp already on the domain type.
@@ -71,6 +75,10 @@ func Score(task *taskkit.Task, w Weights, now time.Time) float64 {
 // rendering a breakdown table. Only terms whose weight * coefficient != 0
 // are included.
 func Components(task *taskkit.Task, w Weights, now time.Time) []taskkit.UrgencyComponent {
+	if task.Status == taskkit.StatusCompleted || task.Status == taskkit.StatusRemoved {
+		return nil
+	}
+
 	type term struct {
 		label string
 		coeff float64
