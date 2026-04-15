@@ -356,7 +356,7 @@ func (e *Engine) hydrate(ctx context.Context, q *db.Queries, row db.Task) (*task
 	}
 
 	var blocking []*taskkit.Task
-	if isActive(taskkit.Status(row.Status)) {
+	if taskkit.Status(row.Status) == taskkit.StatusPending {
 		blockingIDs, err := q.GetActiveBlockingTaskID(ctx, row.TaskID)
 		if err != nil {
 			return nil, fmt.Errorf("engine: get blocking: %w", err)
@@ -484,10 +484,6 @@ func (e *Engine) hydrateShallow(ctx context.Context, q *db.Queries, row db.Task)
 	}
 
 	return t, nil
-}
-
-func isActive(s taskkit.Status) bool {
-	return s == taskkit.StatusPending
 }
 
 func toNullString(s string) sql.NullString {

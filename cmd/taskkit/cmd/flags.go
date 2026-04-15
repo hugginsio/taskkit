@@ -179,7 +179,7 @@ func filtersFromFlags(ctx context.Context, cmd *cobra.Command) ([]filter.Filter,
 
 		filters = append(filters, filter.StatusAny(ss...))
 	default:
-		filters = append(filters, filter.StatusAny(taskkit.StatusPending))
+		filters = append(filters, filter.Status(taskkit.StatusPending))
 	}
 
 	if cmd.Flags().Changed("project") {
