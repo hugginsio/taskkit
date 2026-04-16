@@ -139,16 +139,16 @@ func reverseMutation(row db.History) (Mutation, error) {
 			return SetDisplayID(cur, prev), nil
 
 		case "tag.remove":
-			return RemoveTag(row.NewValue.String), nil
-
-		case "tag.add":
 			return AddTag(row.OldValue.String), nil
 
+		case "tag.add":
+			return RemoveTag(row.NewValue.String), nil
+
 		case "dependency.remove":
-			return RemoveDependency(row.NewValue.String), nil
+			return AddDependency(row.OldValue.String), nil
 
 		case "dependency.add":
-			return AddDependency(row.OldValue.String), nil
+			return RemoveDependency(row.NewValue.String), nil
 		}
 	}
 

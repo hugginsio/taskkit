@@ -30,6 +30,9 @@ var ErrNotFound = errors.New("task not found")
 // ErrCyclicDependency is returned when adding a dependency would create a cycle.
 var ErrCyclicDependency = engine.ErrCyclicDependency
 
+// ErrNothingToUndo is returned when there is no operation to undo.
+var ErrNothingToUndo = engine.ErrNothingToUndo
+
 // Client is the public API for TaskKit.
 type Client struct {
 	engine *engine.Engine
