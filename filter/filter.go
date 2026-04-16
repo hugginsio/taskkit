@@ -60,7 +60,12 @@ func BuildTaskQuery(filters ...Filter) (string, []any) {
 		return base, nil
 	}
 
-	return base + " WHERE " + strings.Join(clauses, " AND "), params
+	wrapped := make([]string, len(clauses))
+	for i, c := range clauses {
+		wrapped[i] = "(" + c + ")"
+	}
+
+	return base + " WHERE " + strings.Join(wrapped, " AND "), params
 }
 
 // inClause builds a "field IN (?, ?, ...)" fragment.
