@@ -148,9 +148,12 @@ func (e *Engine) CreateTask(ctx context.Context, task *taskkit.Task) error {
 	q := db.New(tx)
 	opID := ulid.Make().String()
 
-	displayID, err := nextDisplayID(ctx, q)
-	if err != nil {
-		return fmt.Errorf("engine: create task: %w", err)
+	var displayID int64
+	if task.Status != taskkit.StatusCompleted && task.Status != taskkit.StatusRemoved {
+		displayID, err = nextDisplayID(ctx, q)
+		if err != nil {
+			return fmt.Errorf("engine: create task: %w", err)
+		}
 	}
 
 	if err := q.CreateTask(ctx, db.CreateTaskParams{
